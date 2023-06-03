@@ -24,20 +24,20 @@ Sub firstRun
 	OnStartup
 End Sub
 
-Sub OnStartup
-	Dim aMnu
+' Sub OnStartup
+' 	Dim aMnu
 	
-	'add link to turn on / off play menu
-	Set aMnu = SDB.UI.AddMenuItem(SDB.UI.Menu_Play,4,1)
-	aMnu.Caption = "Auto Crossfade"
-	'Turn on ForgetCrossfade if first use
-	If SDB.IniFile.BoolValue("ForgetCrossfade_MM"&Round(SDB.VersionHi),"active") = True Then
-		activateAutoCrossfade
-	End If
-	aMnu.Checked = SDB.IniFile.BoolValue("ForgetCrossfade_MM"&Round(SDB.VersionHi),"active")
+' 	'add link to turn on / off play menu
+' 	Set aMnu = SDB.UI.AddMenuItem(SDB.UI.Menu_Play,4,1)
+' 	aMnu.Caption = "Auto Crossfade"
+' 	'Turn on ForgetCrossfade if first use
+' 	If SDB.IniFile.BoolValue("ForgetCrossfade_MM"&Round(SDB.VersionHi),"active") = True Then
+' 		activateAutoCrossfade
+' 	End If
+' 	aMnu.Checked = SDB.IniFile.BoolValue("ForgetCrossfade_MM"&Round(SDB.VersionHi),"active")
 			
-	Script.RegisterEvent aMnu, "OnClick", "turnOnOff"
-End Sub
+' 	Script.RegisterEvent aMnu, "OnClick", "turnOnOff"
+' End Sub
 
 Sub turnOnOff(aMnu)
 	If SDB.IniFile.BoolValue("ForgetCrossfade_MM"&Round(SDB.VersionHi),"active") = False Then
@@ -60,77 +60,77 @@ Sub turnOnOff(aMnu)
 	End If
 End Sub
 
-Sub activateAutoCrossfade
-	Script.RegisterEvent SDB, "OnPlay", "refreshTimer"
-	Script.RegisterEvent SDB, "OnSeek", "refreshTimer"
-	Script.RegisterEvent SDB, "OnPause", "pauseTimer"
-	Script.RegisterEvent SDB, "OnStop", "stopTimer"
-	If SDB.Player.isPlaying Then
-		refreshTimer
-	End If
-End Sub
+' Sub activateAutoCrossfade
+' 	Script.RegisterEvent SDB, "OnPlay", "refreshTimer"
+' 	Script.RegisterEvent SDB, "OnSeek", "refreshTimer"
+' 	Script.RegisterEvent SDB, "OnPause", "pauseTimer"
+' 	Script.RegisterEvent SDB, "OnStop", "stopTimer"
+' 	If SDB.Player.isPlaying Then
+' 		refreshTimer
+' 	End If
+' End Sub
 
 
-Sub refreshTimer
-	stopTimer
-	Set trackTimer = SDB.CreateTimer(SDB.Player.CurrentSongLength - SDB.Player.PlaybackTime - 15000)   ' 15 seconds before end of song
-  	Script.RegisterEvent trackTimer, "OnTimer", "checkCrossfade" 
-End Sub
+' Sub refreshTimer
+' 	stopTimer
+' 	Set trackTimer = SDB.CreateTimer(SDB.Player.CurrentSongLength - SDB.Player.PlaybackTime - 15000)   ' 15 seconds before end of song
+'   	Script.RegisterEvent trackTimer, "OnTimer", "checkCrossfade" 
+' End Sub
 
-Sub pauseTimer
-	If SDB.Player.isPaused Then
-		stopTimer
-	Else
-		refreshTimer
-	End If
-End Sub
+' Sub pauseTimer
+' 	If SDB.Player.isPaused Then
+' 		stopTimer
+' 	Else
+' 		refreshTimer
+' 	End If
+' End Sub
 
-Sub stopTimer
-	'MsgBox("stopTimer")
-	On Error Resume Next
-	Script.UnregisterEvents trackTimer
-End Sub
+' Sub stopTimer
+' 	'MsgBox("stopTimer")
+' 	On Error Resume Next
+' 	Script.UnregisterEvents trackTimer
+' End Sub
 
 
-Sub checkCrossfade(Tmr)
-	stopTimer
-	Dim curAlbum, nextAlbum, curAArtist, nextAArtist, curTrack, nextTrack, curDisc, nextDisc
+' Sub checkCrossfade(Tmr)
+' 	stopTimer
+' 	Dim curAlbum, nextAlbum, curAArtist, nextAArtist, curTrack, nextTrack, curDisc, nextDisc
 
-	'Do Nothing if there is not song next
-	'(Index must be zero based while count is not)
-	If SDB.Player.CurrentSongIndex = SDB.Player.CurrentSongList.Count - 1 Then
-		Exit Sub
-	End If
+' 	'Do Nothing if there is not song next
+' 	'(Index must be zero based while count is not)
+' 	If SDB.Player.CurrentSongIndex = SDB.Player.CurrentSongList.Count - 1 Then
+' 		Exit Sub
+' 	End If
 	
-	If SDB.Player.isShuffle Then
-		'if it's shuffling then crossfade cause who knows what is coming next
-		SDB.Player.isCrossfade = True
-	Else
-		'for some reason I've found some of my albums tracks report -1 instead of the same album ID as the other tracks.. so I'm changing this
-		'curAlbum = SDB.Player.CurrentSong.Album.ID
-		'nextAlbum = SDB.Player.PlaylistItems(SDB.Player.CurrentSongIndex+1).Album.ID
-		curAlbum = SDB.Player.CurrentSong.AlbumName
-		nextAlbum = SDB.Player.PlaylistItems(SDB.Player.CurrentSongIndex+1).AlbumName
-		curAArtist = SDB.Player.CurrentSong.AlbumArtistName
-		nextAArtist = SDB.Player.PlaylistItems(SDB.Player.CurrentSongIndex+1).AlbumArtistName
-		curTrack = SDB.Player.CurrentSong.TrackOrder
-		nextTrack = SDB.Player.PlaylistItems(SDB.Player.CurrentSongIndex+1).TrackOrder
-		curDisc = SDB.Player.CurrentSong.DiscNumber
-		nextDisc = SDB.Player.PlaylistItems(SDB.Player.CurrentSongIndex+1).DiscNumber
+' 	If SDB.Player.isShuffle Then
+' 		'if it's shuffling then crossfade cause who knows what is coming next
+' 		SDB.Player.isCrossfade = True
+' 	Else
+' 		'for some reason I've found some of my albums tracks report -1 instead of the same album ID as the other tracks.. so I'm changing this
+' 		'curAlbum = SDB.Player.CurrentSong.Album.ID
+' 		'nextAlbum = SDB.Player.PlaylistItems(SDB.Player.CurrentSongIndex+1).Album.ID
+' 		curAlbum = SDB.Player.CurrentSong.AlbumName
+' 		nextAlbum = SDB.Player.PlaylistItems(SDB.Player.CurrentSongIndex+1).AlbumName
+' 		curAArtist = SDB.Player.CurrentSong.AlbumArtistName
+' 		nextAArtist = SDB.Player.PlaylistItems(SDB.Player.CurrentSongIndex+1).AlbumArtistName
+' 		curTrack = SDB.Player.CurrentSong.TrackOrder
+' 		nextTrack = SDB.Player.PlaylistItems(SDB.Player.CurrentSongIndex+1).TrackOrder
+' 		curDisc = SDB.Player.CurrentSong.DiscNumber
+' 		nextDisc = SDB.Player.PlaylistItems(SDB.Player.CurrentSongIndex+1).DiscNumber
 		
-		'check if what's coming next is next on the same album
-		If (curAlbum = nextAlbum Or curAlbum = "") And curAArtist = nextAArtist And curDisc = nextDisc And curTrack+1 = nextTrack Then
-			SDB.Player.isCrossfade = False
-			'MsgBox("Turn Off Crossfade")
-		Else
-			SDB.Player.isCrossfade = True
-			'MsgBox("Turn On Crossfade")
-		End If
+' 		'check if what's coming next is next on the same album
+' 		If (curAlbum = nextAlbum Or curAlbum = "") And curAArtist = nextAArtist And curDisc = nextDisc And curTrack+1 = nextTrack Then
+' 			SDB.Player.isCrossfade = False
+' 			'MsgBox("Turn Off Crossfade")
+' 		Else
+' 			SDB.Player.isCrossfade = True
+' 			'MsgBox("Turn On Crossfade")
+' 		End If
 		
-		'MsgBox("curAlbumID: "&curAlbum)
-		'MsgBox("nextAlbumID: "&nextAlbum)
-		'MsgBox("curAlbum: "&curAlbum&" - curArtist: "&curAArtist&" - Disc: "&curDisc&" - Track: "&curTrack)
-		'MsgBox("nextAlbum: "&nextAlbum&" - nextArtist: "&nextAArtist&" - Disc: "&nextDisc&" - Track: "&nextTrack)
-	End If
+' 		'MsgBox("curAlbumID: "&curAlbum)
+' 		'MsgBox("nextAlbumID: "&nextAlbum)
+' 		'MsgBox("curAlbum: "&curAlbum&" - curArtist: "&curAArtist&" - Disc: "&curDisc&" - Track: "&curTrack)
+' 		'MsgBox("nextAlbum: "&nextAlbum&" - nextArtist: "&nextAArtist&" - Disc: "&nextDisc&" - Track: "&nextTrack)
+' 	End If
 
-End Sub
+' End Sub
