@@ -1,0 +1,9 @@
+{
+    "title": "Forget Crossfade",
+    "id": "DdS_ForgetCrossfade",
+    "description": "An autoswitching crossfade plugin for MediaMonkey that adapts the crossfade settings to suit the relationship one song should have to the next.",
+    "version": "1.0.1",
+    "type": "general",
+    "minAppVersion": "5.0.0",
+    "author": "Dale de Silva"
+}
