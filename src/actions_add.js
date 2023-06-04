@@ -1,3 +1,4 @@
+import { activateAutoCrossfade, deactivateAutoCrossfade } from "./logic";
 
 
 
@@ -10,10 +11,17 @@ actions.autoAdjustCrossfade = {
     checkable: true,
     checked: true,
     icon: 'shuffle',
-    execute: function () {
-        messageDlg('Auto adjust crossfade set to on/poff.', 'information', ['btnOK'], {
-            defaultButton: 'btnOK'
-        }, undefined);
+    execute: function (value) {
+        const newState = this.checked;
+        app.setValue('dds_fc_auto-crossfade', newState);
+
+        if(newState) {
+            activateAutoCrossfade();
+            uitools.toastMessage.show('Auto adjust crossfading activated');
+        } else {
+            deactivateAutoCrossfade();
+            uitools.toastMessage.show('Auto adjust crossfading deactivated');
+        }
     }
 }
 
