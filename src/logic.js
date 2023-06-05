@@ -1,5 +1,6 @@
 
 let trackTimer;
+const trackEndBufferMS = 11000; // 11 seconds before end of track
 
 
 // Sub activateAutoCrossfade
@@ -66,7 +67,7 @@ function handleShuffleChange(newState) {
 }
 
 function handleSeek(newValue) {
-	console.log('seek to:', newValue);
+	refreshTrackEndTimer();
 }
 
 
@@ -74,18 +75,19 @@ function handleSeek(newValue) {
 
 // Sub refreshTrackEndTimer
 // 	stopTrackEndTimer
-// 	Set trackTimer = SDB.CreateTimer(SDB.Player.CurrentSongLength - SDB.Player.PlaybackTime - 15000)   ' 15 seconds before end of song
+// 	Set trackTimer = SDB.CreateTimer(SDB.Player.CurrentSongLength - SDB.Player.PlaybackTime - trackEndBufferMS)   ' 15 seconds before end of song
 //   	Script.RegisterEvent trackTimer, "OnTimer", "checkCrossfade" 
 // End Sub
 
 function refreshTrackEndTimer() {
+	console.log('Refreshing track end timer');
 	stopTrackEndTimer();
-	const player = app.player;
-	const track = player.getCurrentTrack();
-	const totTime = player.trackLengthMS;
-	const curTime = player.trackPositionMS;
-	trackTimer = totTime - curTime - 15000;   // 15 seconds before end of song
-  	// app.listen(app, 'OnTimer', checkCrossfade);
+	const timeToTrackEnd = app.player.trackLengthMS - app.player.trackPositionMS
+	if(timeToTrackEnd > trackEndBufferMS) {
+		trackTimer = setTimeout( adjustCrossfade, timeToTrackEnd-trackEndBufferMS );
+	} else {
+		adjustCrossfade();
+	}
 }
 
 
@@ -98,8 +100,7 @@ function refreshTrackEndTimer() {
 // End Sub
 
 function stopTrackEndTimer() {
-	//MsgBox("stopTrackEndTimer")
-	// On Error Resume Next // !!!!!!!!!!! Manual conversion needed (try..catch?)
+	clearTimeout(trackTimer);
 }
 
 
@@ -108,7 +109,7 @@ function stopTrackEndTimer() {
 // 	stopTrackEndTimer
 // 	Dim curAlbum, nextAlbum, curAArtist, nextAArtist, curTrack, nextTrack, curDisc, nextDisc
 
-// 	'Do Nothing if there is not song next
+// 	'Do Nothing if there is no song next
 // 	'(Index must be zero based while count is not)
 // 	If SDB.Player.CurrentSongIndex = SDB.Player.CurrentSongList.Count - 1 Then
 // 		Exit Sub
@@ -146,3 +147,23 @@ function stopTrackEndTimer() {
 // 	End If
 
 // End Sub
+
+function adjustCrossfade() {
+	console.log('Adjusting crossfade');
+	stopTrackEndTimer();
+
+	const curTrack = player.getCurrentTrack();
+	const nextTrack = player.getNextTrack();
+	if(!nextTrack) return;
+	
+	const isSameAlbum = nextTrack.idalbum === curTrack.idalbum;
+	const isSameDisc = nextTrack.discNumberInt === curTrack.discNumberInt;
+	const isNextTrack = nextTrack.trackNumberInt === curTrack.trackNumberInt + 1;
+	if(isSameAlbum && isSameDisc && isNextTrack) {
+		console.log('DONT CROSSFADE: Is next track on album');
+		player.crossfade = false;
+	} else {
+		console.log('CROSSFADE: Not sequential on album');
+		player.crossfade = true;
+	}
+}
