@@ -2,6 +2,9 @@
 
 // On very first run
 // TODO: This just runs when launched but should only run on first launch
+
+import { deactivateAutoCrossfade } from "./logic";
+
 // Perhaps just check if value exists yet? But then it won't show if someone uninstalls and reinstalls
 window.whenReady( async () => {
 
@@ -15,8 +18,21 @@ window.whenReady( async () => {
 async function init() {
     await pauseForDevtools();
 	// // Turn On
-    app.setValue('dds_fc_auto-crossfade', true);
-    await showOnboardingGuide();
+    const initialized = app.getValue('dds_fc_initialized', undefined);
+    
+    if(!initialized) {
+        await showOnboardingGuide();
+        app.setValue('dds_fc_initialized', true);
+        activateAutoCrossfade();
+        
+    } else {
+        const autoCrossfade = app.getValue('dds_fc_auto-crossfade', undefined);
+        if(autoCrossfade) {
+            activateAutoCrossfade();
+        } else {
+            deactivateAutoCrossfade();
+        }
+    }
 }
 
 

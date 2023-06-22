@@ -15,6 +15,13 @@ const trackEndBufferMS = 11000; // 11 seconds before end of track
 
 
 export function activateAutoCrossfade() {
+
+	// Disable the ability to crossfade manually
+	const crossfadeMenuItem = getMenuItem('Crossfade', window._menuItems.play.action.submenu);
+	console.log('crossfadeMenuItem', JSON.parse(JSON.stringify(crossfadeMenuItem)));
+    crossfadeMenuItem.action.disabled = true;
+	
+	// Set up listeners and timers for autocrossfading
 	app.listen(app.player, 'playbackState', handlePlaybackChange);
 	app.listen(app.player, 'repeatChange', handleRepeatChange);
 	app.listen(app.player, 'shuffleChange', handleShuffleChange);
@@ -25,6 +32,13 @@ export function activateAutoCrossfade() {
 }
 
 export function deactivateAutoCrossfade() {
+	
+	// Re-enable the ability to crossfade manually
+	const crossfadeMenuItem = getMenuItem('Crossfade', window._menuItems.play.action.submenu);
+	console.log('crossfadeMenuItem', JSON.parse(JSON.stringify(crossfadeMenuItem)));
+    crossfadeMenuItem.action.disabled = false;
+	
+	// Remove listeners and timers for autocrossfading
 	app.unlisten(app.player, 'playbackState', handlePlaybackChange);
 	app.unlisten(app.player, 'repeatChange', handleRepeatChange);
 	app.unlisten(app.player, 'shuffleChange', handleShuffleChange);
@@ -166,4 +180,16 @@ function adjustCrossfade() {
 		console.log('CROSSFADE: Not sequential on album');
 		player.crossfade = true;
 	}
+}
+
+
+
+function getMenuItem(titleStr, menuArr) {
+    for(let i=0; i<menuArr.length; i++) {
+        curItem = menuArr[i];
+        if(curItem.action.title() === titleStr) {
+            return curItem;
+        }
+    }
+    return null;
 }
