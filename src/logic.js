@@ -14,6 +14,7 @@ export function activateAutoCrossfade() {
 	app.listen(app.player, 'repeatChange', handleRepeatChange);
 	app.listen(app.player, 'shuffleChange', handleShuffleChange);
 	app.listen(app.player, 'seekChange', handleSeek);
+	app.listen(app.player, 'nowPlayingModified', handleNowPlayingModified);
 	if(app.player.playing){
 		refreshTrackEndTimer();
 	}
@@ -30,11 +31,13 @@ export function deactivateAutoCrossfade() {
 	app.unlisten(app.player, 'repeatChange', handleRepeatChange);
 	app.unlisten(app.player, 'shuffleChange', handleShuffleChange);
 	app.unlisten(app.player, 'seekChange', handleSeek);
+	app.unlisten(app.player, 'nowPlayingModified', handleNowPlayingModified);
 	stopTrackEndTimer();
 }
 
 
 function handlePlaybackChange(newState) {
+	adjustCrossfade();
 	if(newState === 'play') {
 		refreshTrackEndTimer();
 		
@@ -55,14 +58,22 @@ function handlePlaybackChange(newState) {
 }
 
 function handleRepeatChange(newState) {
+	adjustCrossfade();
 	refreshTrackEndTimer();
 }
 
 function handleShuffleChange(newState) {
+	adjustCrossfade();
 	refreshTrackEndTimer();
 }
 
 function handleSeek(newValue) {
+	adjustCrossfade();
+	refreshTrackEndTimer();
+}
+
+function handleNowPlayingModified(newState) {
+	adjustCrossfade();
 	refreshTrackEndTimer();
 }
 
