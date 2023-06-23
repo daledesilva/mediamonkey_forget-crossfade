@@ -1,9 +1,6 @@
 import { activateAutoCrossfade, deactivateAutoCrossfade } from "./logic";
 
 
-
-
-
 actions.autoAdjustCrossfade = {
     title: 'Auto adjust crossfade',
     hotkeyAble: true,
