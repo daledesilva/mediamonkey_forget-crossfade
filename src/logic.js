@@ -96,21 +96,46 @@ function stopTrackEndTimer() {
 
 
 
-function adjustCrossfade() {
+async function adjustCrossfade() {
 	stopTrackEndTimer();
 
 	const curTrack = player.getCurrentTrack();
 	const nextTrack = player.getNextTrack();
 	if(!nextTrack) return;
 	
+	const tracksAllowCrossfade = await checkIfTracksAllowCrossfade(curTrack, nextTrack);
+	if(!tracksAllowCrossfade) {
+		// Tracks DON'T ALLOW it
+		// console.log('TRACKS DON\'T ALLOW IT');
+		setCrossfade(false);
+		return;
+	}
+	
+	const tracksForceCrossfade = await checkIfTracksForceCrossfade(curTrack, nextTrack);
+	if(tracksForceCrossfade) {
+		// Tracks REQUIRE it
+		// console.log('TRACKS REQUIRE IT');
+		setCrossfade(true);
+		return;
+	}
+	
+	// await checkUserSettings();
+	// console.log('TRACKS ARE INDIFFERENT');
 	const isSameAlbum = nextTrack.idalbum === curTrack.idalbum;
 	const isSameDisc = nextTrack.discNumberInt === curTrack.discNumberInt;
 	const isNextTrack = nextTrack.trackNumberInt === curTrack.trackNumberInt + 1;
 	if(isSameAlbum && isSameDisc && isNextTrack) {
-		player.crossfade = false;
+		// console.log('SAME ALBUM & SEQENTIAL');
+		setCrossfade(false);
 	} else {
-		player.crossfade = true;
+		// console.log('NOT SAME ALBUM OR NOT SEQENTIAL');
+		setCrossfade(true);
 	}
+}
+
+function setCrossfade(value) {
+	// console.log('Setting crossfade to', value);
+	player.crossfade = value;
 }
 
 
@@ -123,4 +148,60 @@ function getMenuItem(titleStr, menuArr) {
         }
     }
     return null;
+}
+
+
+async function checkIfTracksAllowCrossfade(curTrack, nextTrack) {
+
+	let curExtendedTags = await curTrack.getExtendedTagsAsync();
+	if(curExtendedTags) {
+		curExtendedTags = JSON.parse(curExtendedTags);
+		for(let i=0; i<curExtendedTags.length; i++) {
+			const curTag = curExtendedTags[i];
+			if(!curTag) continue;
+			if(curTag.title.toLowerCase().trim() !== 'crossfade out') continue;
+			if(curTag.value.toLowerCase().trim() === 'never') return false;
+		}
+	}
+
+	let nextExtendedTags = await nextTrack.getExtendedTagsAsync();
+	if(nextExtendedTags) {
+		nextExtendedTags = JSON.parse(nextExtendedTags);
+		for(let i=0; i<nextExtendedTags.length; i++) {
+			const curTag = nextExtendedTags[i];
+			if(!curTag) continue;
+			if(curTag.title.toLowerCase().trim() !== 'crossfade in') continue;
+			if(curTag.value.toLowerCase().trim() === 'never') return false;
+		}
+	}
+
+	return true;
+}
+
+
+async function checkIfTracksForceCrossfade(curTrack, nextTrack) {
+	
+	let curExtendedTags = await curTrack.getExtendedTagsAsync();
+	if(curExtendedTags) {
+		curExtendedTags = JSON.parse(curExtendedTags);
+		for(let i=0; i<curExtendedTags.length; i++) {
+			const curTag = curExtendedTags[i];
+			if(!curTag) continue;
+			if(curTag.title.toLowerCase().trim() !== 'crossfade out') continue;
+			if(curTag.value.toLowerCase().trim() === 'always') return true;
+		}
+	}
+	
+	let nextExtendedTags = await nextTrack.getExtendedTagsAsync();
+	if(nextExtendedTags) {
+		nextExtendedTags = JSON.parse(nextExtendedTags);
+		for(let i=0; i<nextExtendedTags.length; i++) {
+			const curTag = nextExtendedTags[i];
+			if(!curTag) continue;
+			if(curTag.title.toLowerCase().trim() !== 'crossfade in') continue;
+			if(curTag.value.toLowerCase().trim() === 'always') return true;
+		}
+	}
+
+	return false;
 }
