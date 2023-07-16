@@ -37,6 +37,7 @@ esbuild.build({
 		// './src/main.ts',
 		'./src/mainwindow_add.js',
 		'./src/actions_add.js',
+		'./src/controls/trackListView_add.js',
 	],//, './src/styles.scss'],
 	bundle: true,
 	// external: [

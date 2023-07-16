@@ -205,3 +205,94 @@ async function checkIfTracksForceCrossfade(curTrack, nextTrack) {
 
 	return false;
 }
+
+
+export async function setAlbumAlwaysCrossfade(album) {
+	const tracks = album.getTracklist();
+	tracks.forEach(track => {
+		setTrackAlwaysCrossfadeIn(track)
+		setTrackAlwaysCrossfadeOut(track)
+	});
+}
+export async function setAlbumNeverCrossfade(album) {
+	const tracks = album.getTracklist();
+	tracks.forEach(track => {
+		setTrackNeverCrossfadeIn(track)
+		setTrackNeverCrossfadeOut(track)
+	});
+}
+// TODO: RemoveCrossfade overides option too
+
+export async function setTrackAlwaysCrossfade(track) {
+	await setTrackAlwaysCrossfadeIn(track);
+	await setTrackAlwaysCrossfadeOut(track);
+}
+export async function setTrackAlwaysCrossfadeIn(track) {
+	await setExtendedTag(track, 'Crossfade In', 'Always');
+}
+export async function setTrackAlwaysCrossfadeOut(track) {
+	await setExtendedTag(track, 'Crossfade Out', 'Always');
+}
+
+
+export async function setTrackNeverCrossfade(track) {
+	await setTrackNeverCrossfadeIn(track);
+	await setTrackNeverCrossfadeOut(track);
+}
+export async function setTrackNeverCrossfadeIn(track) {
+	await setExtendedTag(track, 'Crossfade In', 'Never');
+}
+export async function setTrackNeverCrossfadeOut(track) {
+	await setExtendedTag(track, 'Crossfade Out', 'Never');
+}
+
+
+export async function setTrackAutoCrossfade(track) {
+	await setTrackAutoCrossfadeIn(track);
+	await setTrackAutoCrossfadeOut(track);
+}
+export async function setTrackAutoCrossfadeIn(track) {
+	await removeExtendedTag(track, 'Crossfade In');
+}
+export async function setTrackAutoCrossfadeOut(track) {
+	await removeExtendedTag(track, 'Crossfade Out');
+}
+
+
+
+async function getExtendedTags(track) {
+	let extendedTags = await track.getExtendedTagsAsync();
+	if(extendedTags) {
+		extendedTags = JSON.parse(extendedTags);
+	} else {
+		extendedTags = [];
+	}
+	return extendedTags;
+}
+
+async function setExtendedTag(track, title, value) {
+	// Remove any existing versions of this tag but get other tags not created by this plugin
+	await removeExtendedTag(track, title);
+	let extendedTags = await getExtendedTags(track);
+	// Add in (or back in), with new value
+	extendedTags.push({title, value});
+	await track.setExtendedTagsAsync(JSON.stringify(extendedTags));
+}
+
+async function removeExtendedTag(track, title) {
+	let extendedTags = await getExtendedTags(track);
+	for(let i=extendedTags.length-1; i>=0; i--) {
+		let tag = extendedTags[i];
+		if(tag.title.toLowerCase() == title.toLowerCase()) {
+			extendedTags.splice(i, 1);
+		}
+	}
+	await track.setExtendedTagsAsync(JSON.stringify(extendedTags));
+}
+
+
+
+
+function freeze(val) {
+	return JSON.parse(JSON.stringify(val));
+}
