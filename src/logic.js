@@ -209,16 +209,23 @@ async function checkIfTracksForceCrossfade(curTrack, nextTrack) {
 
 export async function setAlbumAlwaysCrossfade(album) {
 	const tracks = album.getTracklist();
-	tracks.forEach(track => {
-		setTrackAlwaysCrossfadeIn(track)
-		setTrackAlwaysCrossfadeOut(track)
+	tracks.forEach(async track => {
+		await setTrackAlwaysCrossfadeIn(track)
+		await setTrackAlwaysCrossfadeOut(track)
 	});
 }
 export async function setAlbumNeverCrossfade(album) {
 	const tracks = album.getTracklist();
-	tracks.forEach(track => {
-		setTrackNeverCrossfadeIn(track)
-		setTrackNeverCrossfadeOut(track)
+	tracks.forEach(async track => {
+		await setTrackNeverCrossfadeIn(track)
+		await setTrackNeverCrossfadeOut(track)
+	});
+}
+export async function setAlbumAutoCrossfade(album) {
+	const tracks = album.getTracklist();
+	tracks.forEach(async track => {
+		await setTrackAutoCrossfadeIn(track);
+		await setTrackAutoCrossfadeOut(track);
 	});
 }
 // TODO: RemoveCrossfade overides option too
@@ -293,6 +300,38 @@ async function removeExtendedTag(track, title) {
 
 
 
-function freeze(val) {
+export function freeze(val) {
 	return JSON.parse(JSON.stringify(val));
+}
+
+
+
+
+export async function setGenreAutoCrossfade(genre) {
+	let genreDict = await getGenreCrossfadeList();
+	delete genreDict[genre];
+	setGenreCrossfadeList(genreDict);
+}
+
+export async function setGenreAlwaysCrossfade(genre) {
+	let genreDict = await getGenreCrossfadeList();
+	genreDict[genre] = 'always';
+	setGenreCrossfadeList(genreDict);
+}
+
+export async function setGenreNeverCrossfade(genre) {
+	let genreDict = await getGenreCrossfadeList();
+	genreDict[genre] = 'never';
+	setGenreCrossfadeList(genreDict);
+}
+
+
+async function getGenreCrossfadeList() {
+	let genreDict = await app.getValue('dds_fc_genre-list', {});
+	console.log('genreDict fetched', freeze(genreDict));
+	return genreDict;
+}
+function setGenreCrossfadeList(genreDict) {
+	console.log('genreDict just before set', freeze(genreDict));
+	app.setValue('dds_fc_genre-list', genreDict);
 }

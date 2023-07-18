@@ -1,8 +1,8 @@
-import { setTrackAlwaysCrossfade, setTrackAutoCrossfade, setTrackNeverCrossfade } from "../logic";
+import { freeze, setAlbumAlwaysCrossfade, setAlbumAutoCrossfade, setAlbumNeverCrossfade, setGenreAlwaysCrossfade, setGenreAutoCrossfade, setGenreNeverCrossfade, setTrackAlwaysCrossfade, setTrackAutoCrossfade, setTrackNeverCrossfade } from "../logic";
 
 
 actions.autoCrossfadeTrack = {
-    title: 'Auto crossfade track',
+    title: 'Auto crossfade <strong>track/s</strong>',
     checkable: true,
     checked: false, // Make radio button and based on selected track's settings (blank if different)
     execute: async () => {
@@ -15,7 +15,7 @@ actions.autoCrossfadeTrack = {
     }
 }
 actions.alwaysCrossfadeTrack = {
-    title: 'Always crossfade track',
+    title: 'Always crossfade <strong>track/s</strong>',
     checkable: true,
     checked: false, // Make radio button and based on selected track's settings (blank if different)
     execute: async () => {
@@ -28,7 +28,7 @@ actions.alwaysCrossfadeTrack = {
     }
 }
 actions.neverCrossfadeTrack = {
-    title: 'Never crossfade track',
+    title: 'Never crossfade <strong>track/s</strong>',
     checkable: true,
     checked: false, // Make radio button and based on selected track's settings (blank if different)
     execute: async () => {
@@ -42,38 +42,101 @@ actions.neverCrossfadeTrack = {
 }
 
 
+// NOTE: Not sure how to get the album object, so remove this functionality as they can just select all tracks or the album node
+// actions.autoCrossfadeAlbum = {
+//     title: `Auto crossfade <strong>album</strong>`,
+//     checkable: true,
+//     checked: false, // Make radio button and based on album's setting
+//     // visible: // If one track selected and has album,
+//     execute: async () => {
+//         let list = uitools.getSelectedTracklist();
+//         await list.whenLoaded();
+//         list.locked(() => {
+//             let track = list.getValue(0);
+//             if(list.count != 1) return;
+//             if(!track.idalbum) return;
+//             console.log('track', freeze(track));
+//             console.log('idalbum', track.idalbum);
+//             setAlbumAutoCrossfade(track.idalbum);
+//         });
+//     }
+// }
+// actions.alwaysCrossfadeAlbum = {
+//     title: 'Always crossfade <strong>album</strong>',
+//     checkable: true,
+//     checked: false, // Make radio button and based on album's setting
+//     execute: async () => {
+//         let list = uitools.getSelectedTracklist();
+//         await list.whenLoaded();
+//         setAlbumAlwaysCrossfade(list.firstSelected().album);
+//     }
+// }
+// actions.neverCrossfadeAlbum = {
+//     title: 'Never crossfade <strong>album</strong>',
+//     checkable: true,
+//     checked: false, // Make radio button and based on album's setting
+//     execute: async () => {
+//         let list = uitools.getSelectedTracklist();
+//         await list.whenLoaded();
+//         setAlbumNeverCrossfade(list.firstSelected().album);
+//     }
+// }
+
+
 // Use radio button icon
 actions.autoCrossfadeGenre = {
-    title: 'Auto crossfade <genre-name>',
+    title: `Auto crossfade <strong>genre</strong>`,
     checkable: true,
     checked: false, // Make radio button and based on genre's setting
+    // visible: getSelectedTrackGenreIfSame(),
     execute: async () => {
-        // Get first track's genre
-        // setGenreCrossfade(genre, 'auto');
+        let list = uitools.getSelectedTracklist();
+        await list.whenLoaded();
+        list.locked(async () => {
+            let track = list.getValue(0);
+            if(list.count != 1) return;
+            if(!track.genre) return;
+            console.log('genre', track.genre);
+            await setGenreAutoCrossfade(track.genre);
+        })
     }
 }
 actions.alwaysCrossfadeGenre = {
-    title: 'Always crossfade <genre-name>',
+    title: 'Always crossfade <strong>genre</strong>',
     checkable: true,
     checked: false, // Make radio button and based on genre's setting
     execute: async () => {
-        // Get first track's genre
-        // setGenreCrossfade(genre, 'always');
+        let list = uitools.getSelectedTracklist();
+        await list.whenLoaded();
+        list.locked(async () => {
+            let track = list.getValue(0);
+            if(list.count != 1) return;
+            if(!track.genre) return;
+            console.log('genre', track.genre);
+            await setGenreAlwaysCrossfade(track.genre);
+        })
     }
 }
 actions.neverCrossfadeGenre = {
-    title: 'Never crossfade <genre-name>',
+    title: 'Never crossfade <strong>genre</strong>',
     checkable: true,
     checked: false, // Make radio button and based on genre's setting
     execute: async () => {
-        // Get first track's genre
-        // setGenreCrossfade(genre, 'never');
+        let list = uitools.getSelectedTracklist();
+        await list.whenLoaded();
+        list.locked(async () => {
+            let track = list.getValue(0);
+            if(list.count != 1) return;
+            if(!track.genre) return;
+            console.log('genre', track.genre);
+            await setGenreNeverCrossfade(track.genre)
+        })
     }
 }
 
 
 actions.autoCrossfadeMood = {
-    title: 'Auto crossfade <mood-name>',
+    title: 'Auto crossfade <strong>mood</strong>',
     checkable: true,
     checked: false, // Make radio button and based on moods setting
     execute: async () => {
@@ -82,7 +145,7 @@ actions.autoCrossfadeMood = {
     }
 }
 actions.alwaysCrossfadeMood = {
-    title: 'Always crossfade <mood-name>',
+    title: 'Always crossfade <strong>mood</strong>',
     checkable: true,
     checked: false, // Make radio button and based on moods setting
     execute: async () => {
@@ -91,7 +154,7 @@ actions.alwaysCrossfadeMood = {
     }
 }
 actions.neverCrossfadeMood = {
-    title: 'Never crossfade <mood-name>',
+    title: 'Never crossfade <strong>mood</strong>',
     checkable: true,
     checked: false, // Make radio button and based on moods setting
     execute: async () => {
@@ -102,7 +165,7 @@ actions.neverCrossfadeMood = {
 
 
 actions.autoCrossfadeCollection = {
-    title: 'Auto crossfade <collection-name>',
+    title: 'Auto crossfade <strong>collection</strong>',
     checkable: true,
     checked: false, // Make radio button and based on collection's setting
     execute: async () => {
@@ -111,7 +174,7 @@ actions.autoCrossfadeCollection = {
     }
 }
 actions.alwaysCrossfadeCollection = {
-    title: 'Always crossfade <collection-name>',
+    title: 'Always crossfade <strong>collection</strong>',
     checkable: true,
     checked: false, // Make radio button and based on collection's setting
     execute: async () => {
@@ -120,7 +183,7 @@ actions.alwaysCrossfadeCollection = {
     }
 }
 actions.neverCrossfadeCollection = {
-    title: 'Never crossfade <collection-name>',
+    title: 'Never crossfade <strong>collection</strong>',
     checkable: true,
     checked: false, // Make radio button and based on collection's setting
     execute: async () => {
@@ -134,55 +197,116 @@ actions.neverCrossfadeCollection = {
 
 
 
+
+
 window.menus.tracklistMenuItems.push({
-    action: {
-        title: 'Auto crossfade settings',
-        // icon: String,
-        visible: () => uitools.getCanEdit(),
-    },
-    // order: Number,          // Required
-    // grouporder: Number,     // Required
-    submenu: [
-        {
-            action: {title: 'Selected tracks'},
-            submenu: [
-                {action: actions.autoCrossfadeTrack},
-                {action: actions.alwaysCrossfadeTrack},
-                {action: actions.neverCrossfadeTrack}
-            ]
-        },
-        {
-            action: {
-                title: 'Entire <insert name> genre'
-                // Only visible if all tracks have the same genre
-            },
-            submenu: [
-                {action: actions.autoCrossfadeGenre},
-                {action: actions.alwaysCrossfadeGenre},
-                {action: actions.neverCrossfadeGenre}
-            ]
-        },
-        {
-            action: {
-                title: 'Entire <insert name> mood'
-                // Only visible if all tracks have the same mood
-            },
-            submenu: [
-                {action: actions.autoCrossfadeMood},
-                {action: actions.alwaysCrossfadeMood},
-                {action: actions.neverCrossfadeMood}
-            ]
-        },
-        {
-            action: {
-                title: 'Entire <insert name> collection'
-                // Only visible if all tracks are in the same collection
-            },
-            submenu: [
-                {action: actions.autoCrossfadeCollection},
-                {action: actions.alwaysCrossfadeCollection},
-                {action: actions.neverCrossfadeCollection}
-            ]
-        },
-    ]
-})
+    action: actions.autoCrossfadeTrack,
+});
+window.menus.tracklistMenuItems.push({
+    action: actions.alwaysCrossfadeTrack,
+});
+window.menus.tracklistMenuItems.push({
+    action: actions.neverCrossfadeTrack,
+});
+
+
+// window.menus.tracklistMenuItems.push({
+//     action: actions.autoCrossfadeAlbum,
+// });
+// window.menus.tracklistMenuItems.push({
+//     action: actions.alwaysCrossfadeAlbum,
+// });
+// window.menus.tracklistMenuItems.push({
+//     action: actions.neverCrossfadeAlbum,
+// });
+
+
+window.menus.tracklistMenuItems.push({
+    action: actions.autoCrossfadeGenre,
+});
+window.menus.tracklistMenuItems.push({
+    action: actions.alwaysCrossfadeGenre,
+});
+window.menus.tracklistMenuItems.push({
+    action: actions.neverCrossfadeGenre,
+});
+
+
+window.menus.tracklistMenuItems.push({
+    action: actions.autoCrossfadeMood,
+});
+window.menus.tracklistMenuItems.push({
+    action: actions.alwaysCrossfadeMood,
+});
+window.menus.tracklistMenuItems.push({
+    action: actions.neverCrossfadeMood,
+});
+
+
+window.menus.tracklistMenuItems.push({
+    action: actions.autoCrossfadeCollection,
+});
+window.menus.tracklistMenuItems.push({
+    action: actions.alwaysCrossfadeCollection,
+});
+window.menus.tracklistMenuItems.push({
+    action: actions.neverCrossfadeCollection,
+});
+
+
+
+
+
+
+// window.menus.tracklistMenuItems.push({
+//     action: {
+//         title: 'Auto crossfade settings',
+//         // icon: String,
+//         visible: () => uitools.getCanEdit(),
+//     },
+//     // order: Number,          // Required
+//     // grouporder: Number,     // Required
+//     submenu: [
+//         {
+//             action: {title: 'Selected tracks'},
+//             submenu: [
+//                 {action: actions.autoCrossfadeTrack},
+//                 {action: actions.alwaysCrossfadeTrack},
+//                 {action: actions.neverCrossfadeTrack}
+//             ]
+//         },
+//         {
+//             action: {
+//                 title: 'Entire <insert name> genre'
+//                 // Only visible if all tracks have the same genre
+//             },
+//             submenu: [
+//                 {action: actions.autoCrossfadeGenre},
+//                 {action: actions.alwaysCrossfadeGenre},
+//                 {action: actions.neverCrossfadeGenre}
+//             ]
+//         },
+//         {
+//             action: {
+//                 title: 'Entire <insert name> mood'
+//                 // Only visible if all tracks have the same mood
+//             },
+//             submenu: [
+//                 {action: actions.autoCrossfadeMood},
+//                 {action: actions.alwaysCrossfadeMood},
+//                 {action: actions.neverCrossfadeMood}
+//             ]
+//         },
+//         {
+//             action: {
+//                 title: 'Entire <insert name> collection'
+//                 // Only visible if all tracks are in the same collection
+//             },
+//             submenu: [
+//                 {action: actions.autoCrossfadeCollection},
+//                 {action: actions.alwaysCrossfadeCollection},
+//                 {action: actions.neverCrossfadeCollection}
+//             ]
+//         },
+//     ]
+// })
