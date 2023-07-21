@@ -47,12 +47,19 @@ actions.neverCrossfadeTrack = {
 
 
 actions.autoCrossfadeMood = {
-    title: 'Auto crossfade <strong>mood</strong>',
+    title: 'Revert <strong>mood</strong> to auto crossfade',
     checkable: true,
     checked: false, // Make radio button and based on moods setting
     execute: async () => {
-        // Get first track's mood
-        // setMoodCrossfade(mood, 'auto');
+        let list = uitools.getSelectedTracklist();
+        await list.whenLoaded();
+        list.locked(async () => {
+            let track = list.getValue(0);
+            if(list.count != 1) return;
+            if(!track.mood) return;
+            console.log('mood', track.mood);
+            await setMoodAutoCrossfade(track.mood);
+        })
     }
 }
 actions.alwaysCrossfadeMood = {
@@ -60,8 +67,15 @@ actions.alwaysCrossfadeMood = {
     checkable: true,
     checked: false, // Make radio button and based on moods setting
     execute: async () => {
-        // Get first track's mood
-        // setMoodCrossfade(mood, 'always');
+        let list = uitools.getSelectedTracklist();
+        await list.whenLoaded();
+        list.locked(async () => {
+            let track = list.getValue(0);
+            if(list.count != 1) return;
+            if(!track.mood) return;
+            console.log('mood', track.mood);
+            await setMoodAlwaysCrossfade(track.mood);
+        })
     }
 }
 actions.neverCrossfadeMood = {
@@ -69,8 +83,15 @@ actions.neverCrossfadeMood = {
     checkable: true,
     checked: false, // Make radio button and based on moods setting
     execute: async () => {
-        // Get first track's mood
-        // setMoodCrossfade(mood, 'never');
+        let list = uitools.getSelectedTracklist();
+        await list.whenLoaded();
+        list.locked(async () => {
+            let track = list.getValue(0);
+            if(list.count != 1) return;
+            if(!track.mood) return;
+            console.log('mood', track.mood);
+            await setMoodNeverCrossfade(track.mood);
+        })
     }
 }
 
@@ -78,7 +99,7 @@ actions.neverCrossfadeMood = {
 
 // Use radio button icon
 actions.autoCrossfadeGenre = {
-    title: `Auto crossfade <strong>genre</strong>`,
+    title: `Revert <strong>genre</strong> to auto crossfade`,
     checkable: true,
     checked: false, // Make radio button and based on genre's setting
     // visible: getSelectedTrackGenreIfSame(),
@@ -129,33 +150,58 @@ actions.neverCrossfadeGenre = {
 
 
 
-actions.autoCrossfadeCollection = {
-    title: 'Auto crossfade <strong>collection</strong>',
-    checkable: true,
-    checked: false, // Make radio button and based on collection's setting
-    execute: async () => {
-        // Get first track's collection
-        // setCollectionCrossfade(collection, 'auto');
-    }
-}
-actions.alwaysCrossfadeCollection = {
-    title: 'Always crossfade <strong>collection</strong>',
-    checkable: true,
-    checked: false, // Make radio button and based on collection's setting
-    execute: async () => {
-        // Get first track's collection
-        // setCollectionCrossfade(collection, 'always');
-    }
-}
-actions.neverCrossfadeCollection = {
-    title: 'Never crossfade <strong>collection</strong>',
-    checkable: true,
-    checked: false, // Make radio button and based on collection's setting
-    execute: async () => {
-        // Get first track's collection
-        // setCollectionCrossfade(collection, 'never');
-    }
-}
+// NOTE: Setting by collection has been removed because there's no easy way to get the collection of a track that I'm aware.
+// ie. The "track.collection" property I've put in as a placeholder doesn't exist.
+
+// actions.autoCrossfadeCollection = {
+//     title: 'Revert <strong>collection</strong> to auto crossfade',
+//     checkable: true,
+//     checked: false, // Make radio button and based on collection's setting
+//     execute: async () => {
+//         let list = uitools.getSelectedTracklist();
+//         await list.whenLoaded();
+//         list.locked(async () => {
+//             let track = list.getValue(0);
+//             if(list.count != 1) return;
+//             if(!track.collection) return;
+//             console.log('collection', track.collection);
+//             await setCollectionAutoCrossfade(track.collection)
+//         })
+//     }
+// }
+// actions.alwaysCrossfadeCollection = {
+//     title: 'Always crossfade <strong>collection</strong>',
+//     checkable: true,
+//     checked: false, // Make radio button and based on collection's setting
+//     execute: async () => {
+//         let list = uitools.getSelectedTracklist();
+//         await list.whenLoaded();
+//         list.locked(async () => {
+//             let track = list.getValue(0);
+//             if(list.count != 1) return;
+//             if(!track.collection) return;
+//             console.log('collection', track.collection);
+//             await setCollectionAlwaysCrossfade(track.collection)
+//         })
+//     }
+// }
+// actions.neverCrossfadeCollection = {
+//     title: 'Never crossfade <strong>collection</strong>',
+//     checkable: true,
+//     checked: false, // Make radio button and based on collection's setting
+//     execute: async () => {
+//         let list = uitools.getSelectedTracklist();
+//         await list.whenLoaded();
+//         list.locked(async () => {
+//             let track = list.getValue(0);
+//             console.log('track', track);
+//             if(list.count != 1) return;
+//             if(!track.collection) return;
+//             console.log('collection', track.collection);
+//             await setCollectionNeverCrossfade(track.collection)
+//         })
+//     }
+// }
 
 
 
@@ -175,6 +221,7 @@ window.menus.tracklistMenuItems.push({
             {
                 action: {
                     title: 'Selected track/s',   // Track overrules mood
+                    execute: async () => {console.log('Opening...')},
                     submenu: [
                         {action: actions.autoCrossfadeTrack},
                         {action: actions.alwaysCrossfadeTrack},
@@ -202,16 +249,16 @@ window.menus.tracklistMenuItems.push({
                     ]
                 },
             },
-            {
-                action: {
-                    title: 'Entire collection',
-                    submenu: [
-                        {action: actions.autoCrossfadeCollection},
-                        {action: actions.alwaysCrossfadeCollection},
-                        {action: actions.neverCrossfadeCollection}
-                    ]
-                },
-            },
+            // {
+            //     action: {
+            //         title: 'Entire collection',
+            //         submenu: [
+            //             {action: actions.autoCrossfadeCollection},
+            //             {action: actions.alwaysCrossfadeCollection},
+            //             {action: actions.neverCrossfadeCollection}
+            //         ]
+            //     },
+            // },
         ]
     },
     order: 100,
