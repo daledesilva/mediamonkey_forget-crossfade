@@ -263,3 +263,41 @@ window.menus.tracklistMenuItems.push({
     },
     order: 100,
 });
+
+
+
+
+
+setTimeout(() => {window.whenReady(callback);
+// //     let testList = uitools.getSelectedTracklist();
+// //     // await testList.whenLoaded();
+// //     testList.focusChange = function() {
+//     //     }
+//     let testList = uitools.getSelectedTracklist();
+//     app.listen( testList, 'change', () => {
+//         console.log  ('changed selection');
+//     });
+
+    console.log("Window ready");
+
+    // app.listen( player.getSongList(), 'change', ()=>{
+    //     console.log("playlist changed");
+    // });
+    // app.listen( uitools.getSelectedTracklist(), 'change', ()=>{
+    //     console.log("selection changed (from uitools)");
+    // });
+
+    // app.listen( Native.getSelectedTracklist(), 'change', ()=>{
+    //     console.log("selection changed (from native)");
+    // });
+    
+}, 5000)
+
+// app.listen( app.afterReload, 'change', () => {
+//     console.log("reloaded");
+//     app.listen( app.menuClosed, 'change', () => {
+//         console.log  ('menu closed');
+//     });
+// });
+    
+    
