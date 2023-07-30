@@ -2,6 +2,18 @@
 let trackTimer;
 const trackEndBufferMS = 11000; // 11 seconds before end of track (To catch max crossfade which is 10 seconds)
 
+const crossfadeMetaTitle = {
+	out: 'crossfade out',
+	in: 'crossfade in',
+}
+
+const crossfadeType = {
+	auto: 'auto',
+	always: 'always',
+	never: 'never',
+}
+
+
 
 export function activateAutoCrossfade() {
 
@@ -159,8 +171,8 @@ async function checkIfTracksAllowCrossfade(curTrack, nextTrack) {
 		for(let i=0; i<curExtendedTags.length; i++) {
 			const curTag = curExtendedTags[i];
 			if(!curTag) continue;
-			if(curTag.title.toLowerCase().trim() !== 'crossfade out') continue;
-			if(curTag.value.toLowerCase().trim() === 'never') return false;
+			if(curTag.title.toLowerCase().trim() !== crossfadeMetaTitle.out) continue;
+			if(curTag.value.toLowerCase().trim() === crossfadeType.never) return false;
 		}
 	}
 
@@ -170,8 +182,8 @@ async function checkIfTracksAllowCrossfade(curTrack, nextTrack) {
 		for(let i=0; i<nextExtendedTags.length; i++) {
 			const curTag = nextExtendedTags[i];
 			if(!curTag) continue;
-			if(curTag.title.toLowerCase().trim() !== 'crossfade in') continue;
-			if(curTag.value.toLowerCase().trim() === 'never') return false;
+			if(curTag.title.toLowerCase().trim() !== crossfadeMetaTitle.in) continue;
+			if(curTag.value.toLowerCase().trim() === crossfadeType.never) return false;
 		}
 	}
 
@@ -187,8 +199,8 @@ async function checkIfTracksForceCrossfade(curTrack, nextTrack) {
 		for(let i=0; i<curExtendedTags.length; i++) {
 			const curTag = curExtendedTags[i];
 			if(!curTag) continue;
-			if(curTag.title.toLowerCase().trim() !== 'crossfade out') continue;
-			if(curTag.value.toLowerCase().trim() === 'always') return true;
+			if(curTag.title.toLowerCase().trim() !== crossfadeMetaTitle.out) continue;
+			if(curTag.value.toLowerCase().trim() === crossfadeType.always) return true;
 		}
 	}
 	
@@ -198,12 +210,64 @@ async function checkIfTracksForceCrossfade(curTrack, nextTrack) {
 		for(let i=0; i<nextExtendedTags.length; i++) {
 			const curTag = nextExtendedTags[i];
 			if(!curTag) continue;
-			if(curTag.title.toLowerCase().trim() !== 'crossfade in') continue;
-			if(curTag.value.toLowerCase().trim() === 'always') return true;
+			if(curTag.title.toLowerCase().trim() !== crossfadeMetaTitle.in) continue;
+			if(curTag.value.toLowerCase().trim() === crossfadeType.always) return true;
 		}
 	}
 
 	return false;
+}
+
+
+async function checkIfMoodsForceCrossfade(curTrack, nextTrack) {
+	let curExtendedTags = await curTrack.getExtendedTagsAsync();
+	if(curExtendedTags) {
+		curExtendedTags = JSON.parse(curExtendedTags);
+		for(let i=0; i<curExtendedTags.length; i++) {
+			const curTag = curExtendedTags[i];
+			if(!curTag) continue;
+			if(curTag.title.toLowerCase().trim() !== crossfadeMetaTitle.out) continue;
+			if(curTag.value.toLowerCase().trim() === crossfadeType.always) return true;
+		}
+	}
+}
+async function checkIfGenresForceCrossfade(curTrack, nextTrack) {
+	let curExtendedTags = await curTrack.getExtendedTagsAsync();
+	if(curExtendedTags) {
+		curExtendedTags = JSON.parse(curExtendedTags);
+		for(let i=0; i<curExtendedTags.length; i++) {
+			const curTag = curExtendedTags[i];
+			if(!curTag) continue;
+			if(curTag.title.toLowerCase().trim() !== crossfadeMetaTitle.out) continue;
+			if(curTag.value.toLowerCase().trim() === crossfadeType.always) return true;
+		}
+	}
+}
+
+
+async function checkIfMoodsAllowCrossfade(curTrack, nextTrack) {
+	let curExtendedTags = await curTrack.getExtendedTagsAsync();
+	if(curExtendedTags) {
+		curExtendedTags = JSON.parse(curExtendedTags);
+		for(let i=0; i<curExtendedTags.length; i++) {
+			const curTag = curExtendedTags[i];
+			if(!curTag) continue;
+			if(curTag.title.toLowerCase().trim() !== crossfadeMetaTitle.out) continue;
+			if(curTag.value.toLowerCase().trim() === crossfadeType.always) return true;
+		}
+	}
+}
+async function checkIfGenresAllowCrossfade(curTrack, nextTrack) {
+	let curExtendedTags = await curTrack.getExtendedTagsAsync();
+	if(curExtendedTags) {
+		curExtendedTags = JSON.parse(curExtendedTags);
+		for(let i=0; i<curExtendedTags.length; i++) {
+			const curTag = curExtendedTags[i];
+			if(!curTag) continue;
+			if(curTag.title.toLowerCase().trim() !== crossfadeMetaTitle.out) continue;
+			if(curTag.value.toLowerCase().trim() === crossfadeType.always) return true;
+		}
+	}
 }
 
 
@@ -235,10 +299,10 @@ export async function setTrackAlwaysCrossfade(track) {
 	await setTrackAlwaysCrossfadeOut(track);
 }
 export async function setTrackAlwaysCrossfadeIn(track) {
-	await setExtendedTag(track, 'Crossfade In', 'Always');
+	await setExtendedTag(track, crossfadeMetaTitle.in, crossfadeType.always);
 }
 export async function setTrackAlwaysCrossfadeOut(track) {
-	await setExtendedTag(track, 'Crossfade Out', 'Always');
+	await setExtendedTag(track, crossfadeMetaTitle.out, crossfadeType.always);
 }
 
 
@@ -247,10 +311,10 @@ export async function setTrackNeverCrossfade(track) {
 	await setTrackNeverCrossfadeOut(track);
 }
 export async function setTrackNeverCrossfadeIn(track) {
-	await setExtendedTag(track, 'Crossfade In', 'Never');
+	await setExtendedTag(track, crossfadeMetaTitle.in, crossfadeType.never);
 }
 export async function setTrackNeverCrossfadeOut(track) {
-	await setExtendedTag(track, 'Crossfade Out', 'Never');
+	await setExtendedTag(track, crossfadeMetaTitle.out, crossfadeType.never);
 }
 
 
@@ -259,10 +323,10 @@ export async function setTrackAutoCrossfade(track) {
 	await setTrackAutoCrossfadeOut(track);
 }
 export async function setTrackAutoCrossfadeIn(track) {
-	await removeExtendedTag(track, 'Crossfade In');
+	await removeExtendedTag(track, crossfadeMetaTitle.in);
 }
 export async function setTrackAutoCrossfadeOut(track) {
-	await removeExtendedTag(track, 'Crossfade Out');
+	await removeExtendedTag(track, crossfadeMetaTitle.out);
 }
 
 
@@ -334,4 +398,36 @@ async function getGenreCrossfadeList() {
 function setGenreCrossfadeList(genreDict) {
 	console.log('genreDict just before set', freeze(genreDict));
 	app.setValue('dds_fc_genre-list', genreDict);
+}
+
+
+
+
+export async function setMoodAutoCrossfade(mood) {
+	let moodDict = await getMoodCrossfadeList();
+	delete moodDict[mood];
+	setMoodCrossfadeList(moodDict);
+}
+
+export async function setMoodAlwaysCrossfade(mood) {
+	let moodDict = await getMoodCrossfadeList();
+	moodDict[mood] = 'always';
+	setMoodCrossfadeList(moodDict);
+}
+
+export async function setMoodNeverCrossfade(mood) {
+	let moodDict = await getMoodCrossfadeList();
+	moodDict[mood] = 'never';
+	setMoodCrossfadeList(moodDict);
+}
+
+
+async function getMoodCrossfadeList() {
+	let moodDict = await app.getValue('dds_fc_mood-list', {});
+	console.log('moodDict fetched', freeze(moodDict));
+	return moodDict;
+}
+function setMoodCrossfadeList(moodDict) {
+	console.log('moodDict just before set', freeze(moodDict));
+	app.setValue('dds_fc_mood-list', moodDict);
 }

@@ -1,4 +1,4 @@
-import { freeze, setAlbumAlwaysCrossfade, setAlbumAutoCrossfade, setAlbumNeverCrossfade, setGenreAlwaysCrossfade, setGenreAutoCrossfade, setGenreNeverCrossfade, setTrackAlwaysCrossfade, setTrackAutoCrossfade, setTrackNeverCrossfade } from "../logic";
+import { freeze, setAlbumAlwaysCrossfade, setAlbumAutoCrossfade, setAlbumNeverCrossfade, setGenreAlwaysCrossfade, setGenreAutoCrossfade, setGenreNeverCrossfade, setMoodAlwaysCrossfade, setMoodAutoCrossfade, setMoodNeverCrossfade, setTrackAlwaysCrossfade, setTrackAutoCrossfade, setTrackNeverCrossfade } from "../logic";
 
 
 actions.autoCrossfadeTrack = {
@@ -268,7 +268,7 @@ window.menus.tracklistMenuItems.push({
 
 
 
-setTimeout(() => {window.whenReady(callback);
+// setTimeout(() => {window.whenReady(callback);
 // //     let testList = uitools.getSelectedTracklist();
 // //     // await testList.whenLoaded();
 // //     testList.focusChange = function() {
@@ -278,7 +278,7 @@ setTimeout(() => {window.whenReady(callback);
 //         console.log  ('changed selection');
 //     });
 
-    console.log("Window ready");
+    // console.log("Window ready");
 
     // app.listen( player.getSongList(), 'change', ()=>{
     //     console.log("playlist changed");
@@ -291,7 +291,7 @@ setTimeout(() => {window.whenReady(callback);
     //     console.log("selection changed (from native)");
     // });
     
-}, 5000)
+// }, 5000)
 
 // app.listen( app.afterReload, 'change', () => {
 //     console.log("reloaded");
