@@ -2,12 +2,12 @@
 let trackTimer;
 const trackEndBufferMS = 11000; // 11 seconds before end of track (To catch max crossfade which is 10 seconds)
 
-const crossfadeMetaTitle = {
+export const crossfadeDirection = {
 	out: 'crossfade out',
 	in: 'crossfade in',
 }
 
-const crossfadeType = {
+export const crossfadeType = {
 	auto: 'auto',
 	always: 'always',
 	never: 'never',
@@ -114,34 +114,68 @@ async function adjustCrossfade() {
 	const curTrack = player.getCurrentTrack();
 	const nextTrack = player.getNextTrack();
 	if(!nextTrack) return;
-	
-	const tracksAllowCrossfade = await checkIfTracksAllowCrossfade(curTrack, nextTrack);
-	if(!tracksAllowCrossfade) {
-		// Tracks DON'T ALLOW it
-		// console.log('TRACKS DON\'T ALLOW IT');
+
+	// These are added together for cur and next track to define how to adjust the crossfade
+	const prefValues = {
+		'auto': 0,
+		'always': 1,
+		'never': -1
+	}
+
+	const curTrackPref = prefValues[await getTrackPref(curTrack, crossfadeDirection.out)];
+	const nextTrackPref = prefValues[await getTrackPref(nextTrack, crossfadeDirection.in)];
+	const trackCrossfadePref = curTrackPref + nextTrackPref;
+	if(trackCrossfadePref > 0) {
+		console.log(`A TRACK requires ALWAYS crossfading`);
+		setCrossfade(true);
+		return;
+	} else if(trackCrossfadePref < 0) {
+		console.log(`A TRACK requires NEVER crossfading`);
 		setCrossfade(false);
 		return;
 	}
-	
-	const tracksForceCrossfade = await checkIfTracksForceCrossfade(curTrack, nextTrack);
-	if(tracksForceCrossfade) {
-		// Tracks REQUIRE it
-		// console.log('TRACKS REQUIRE IT');
+	// The track prefs don't care or they cancel out.
+
+	const curMoodPref = prefValues[await getMoodPref(curTrack)];
+	const nextMoodPref = prefValues[await getMoodPref(nextTrack)];
+	const moodCrossfadePref = curMoodPref + nextMoodPref;
+	if(moodCrossfadePref > 0) {
+		console.log(`A track's MOOD requires ALWAYS crossfading`);
 		setCrossfade(true);
 		return;
+	} else if(moodCrossfadePref < 0) {
+		console.log(`A track's MOOD requires NEVER crossfading`);
+		setCrossfade(false);
+		return;
 	}
-	
-	// await checkUserSettings();
-	// console.log('TRACKS ARE INDIFFERENT');
+	// The mood prefs don't care or they cancel out.
+
+	const curGenrePref = prefValues[await getGenrePref(curTrack)];
+	const nextGenrePref = prefValues[await getGenrePref(nextTrack)];
+	const genreCrossfadePref = curGenrePref + nextGenrePref;
+	if(genreCrossfadePref > 0) {
+		console.log(`A track's GENRE requires ALWAYS crossfading`);
+		setCrossfade(true);
+		return;
+	} else if(genreCrossfadePref < 0) {
+		console.log(`A track's GENRE requires NEVER crossfading`);
+		setCrossfade(false);
+		return;
+	}
+	// The genre prefs don't care or they cancel out.
+
+	// Base the crossfade decision on whether it's the next track on the same album
 	const isSameAlbum = nextTrack.idalbum === curTrack.idalbum;
 	const isSameDisc = nextTrack.discNumberInt === curTrack.discNumberInt;
 	const isNextTrack = nextTrack.trackNumberInt === curTrack.trackNumberInt + 1;
 	if(isSameAlbum && isSameDisc && isNextTrack) {
-		// console.log('SAME ALBUM & SEQENTIAL');
+		console.log(`It's the next track on the album, DON'T crossfade`);
 		setCrossfade(false);
+		return;
 	} else {
-		// console.log('NOT SAME ALBUM OR NOT SEQENTIAL');
+		console.log(`It's NOT the next track on the album, DO crossfade`);
 		setCrossfade(true);
+		return;
 	}
 }
 
@@ -163,112 +197,37 @@ function getMenuItem(titleStr, menuArr) {
 }
 
 
-async function checkIfTracksAllowCrossfade(curTrack, nextTrack) {
 
-	let curExtendedTags = await curTrack.getExtendedTagsAsync();
-	if(curExtendedTags) {
-		curExtendedTags = JSON.parse(curExtendedTags);
-		for(let i=0; i<curExtendedTags.length; i++) {
-			const curTag = curExtendedTags[i];
+
+async function getTrackPref(track, direction) {
+	let extendedTags = await track.getExtendedTagsAsync();
+	if(extendedTags) {
+		extendedTags = JSON.parse(extendedTags);
+		for(let i=0; i<extendedTags.length; i++) {
+			const curTag = extendedTags[i];
 			if(!curTag) continue;
-			if(curTag.title.toLowerCase().trim() !== crossfadeMetaTitle.out) continue;
-			if(curTag.value.toLowerCase().trim() === crossfadeType.never) return false;
+			if(curTag.title.toLowerCase().trim() !== direction.toLowerCase()) continue;
+			return curTag.value;
 		}
 	}
-
-	let nextExtendedTags = await nextTrack.getExtendedTagsAsync();
-	if(nextExtendedTags) {
-		nextExtendedTags = JSON.parse(nextExtendedTags);
-		for(let i=0; i<nextExtendedTags.length; i++) {
-			const curTag = nextExtendedTags[i];
-			if(!curTag) continue;
-			if(curTag.title.toLowerCase().trim() !== crossfadeMetaTitle.in) continue;
-			if(curTag.value.toLowerCase().trim() === crossfadeType.never) return false;
-		}
-	}
-
-	return true;
+	// If no preference found
+	return crossfadeType.auto
 }
 
-
-async function checkIfTracksForceCrossfade(curTrack, nextTrack) {
-	
-	let curExtendedTags = await curTrack.getExtendedTagsAsync();
-	if(curExtendedTags) {
-		curExtendedTags = JSON.parse(curExtendedTags);
-		for(let i=0; i<curExtendedTags.length; i++) {
-			const curTag = curExtendedTags[i];
-			if(!curTag) continue;
-			if(curTag.title.toLowerCase().trim() !== crossfadeMetaTitle.out) continue;
-			if(curTag.value.toLowerCase().trim() === crossfadeType.always) return true;
-		}
-	}
-	
-	let nextExtendedTags = await nextTrack.getExtendedTagsAsync();
-	if(nextExtendedTags) {
-		nextExtendedTags = JSON.parse(nextExtendedTags);
-		for(let i=0; i<nextExtendedTags.length; i++) {
-			const curTag = nextExtendedTags[i];
-			if(!curTag) continue;
-			if(curTag.title.toLowerCase().trim() !== crossfadeMetaTitle.in) continue;
-			if(curTag.value.toLowerCase().trim() === crossfadeType.always) return true;
-		}
-	}
-
-	return false;
+async function getMoodPref(track) {
+	const mood = track.mood;
+	if(!mood) return crossfadeType.auto;
+	let moodDict = await getMoodCrossfadeList();
+	return moodDict[mood] || crossfadeType.auto;
 }
 
-
-async function checkIfMoodsForceCrossfade(curTrack, nextTrack) {
-	let curExtendedTags = await curTrack.getExtendedTagsAsync();
-	if(curExtendedTags) {
-		curExtendedTags = JSON.parse(curExtendedTags);
-		for(let i=0; i<curExtendedTags.length; i++) {
-			const curTag = curExtendedTags[i];
-			if(!curTag) continue;
-			if(curTag.title.toLowerCase().trim() !== crossfadeMetaTitle.out) continue;
-			if(curTag.value.toLowerCase().trim() === crossfadeType.always) return true;
-		}
-	}
-}
-async function checkIfGenresForceCrossfade(curTrack, nextTrack) {
-	let curExtendedTags = await curTrack.getExtendedTagsAsync();
-	if(curExtendedTags) {
-		curExtendedTags = JSON.parse(curExtendedTags);
-		for(let i=0; i<curExtendedTags.length; i++) {
-			const curTag = curExtendedTags[i];
-			if(!curTag) continue;
-			if(curTag.title.toLowerCase().trim() !== crossfadeMetaTitle.out) continue;
-			if(curTag.value.toLowerCase().trim() === crossfadeType.always) return true;
-		}
-	}
+async function getGenrePref(track) {
+	const genre = track.genre;
+	if(!genre) return crossfadeType.auto;
+	let genreDict = await getGenreCrossfadeList();
+	return genreDict[genre] || crossfadeType.auto;
 }
 
-
-async function checkIfMoodsAllowCrossfade(curTrack, nextTrack) {
-	let curExtendedTags = await curTrack.getExtendedTagsAsync();
-	if(curExtendedTags) {
-		curExtendedTags = JSON.parse(curExtendedTags);
-		for(let i=0; i<curExtendedTags.length; i++) {
-			const curTag = curExtendedTags[i];
-			if(!curTag) continue;
-			if(curTag.title.toLowerCase().trim() !== crossfadeMetaTitle.out) continue;
-			if(curTag.value.toLowerCase().trim() === crossfadeType.always) return true;
-		}
-	}
-}
-async function checkIfGenresAllowCrossfade(curTrack, nextTrack) {
-	let curExtendedTags = await curTrack.getExtendedTagsAsync();
-	if(curExtendedTags) {
-		curExtendedTags = JSON.parse(curExtendedTags);
-		for(let i=0; i<curExtendedTags.length; i++) {
-			const curTag = curExtendedTags[i];
-			if(!curTag) continue;
-			if(curTag.title.toLowerCase().trim() !== crossfadeMetaTitle.out) continue;
-			if(curTag.value.toLowerCase().trim() === crossfadeType.always) return true;
-		}
-	}
-}
 
 
 export async function setAlbumAlwaysCrossfade(album) {
@@ -299,10 +258,10 @@ export async function setTrackAlwaysCrossfade(track) {
 	await setTrackAlwaysCrossfadeOut(track);
 }
 export async function setTrackAlwaysCrossfadeIn(track) {
-	await setExtendedTag(track, crossfadeMetaTitle.in, crossfadeType.always);
+	await setExtendedTag(track, crossfadeDirection.in, crossfadeType.always);
 }
 export async function setTrackAlwaysCrossfadeOut(track) {
-	await setExtendedTag(track, crossfadeMetaTitle.out, crossfadeType.always);
+	await setExtendedTag(track, crossfadeDirection.out, crossfadeType.always);
 }
 
 
@@ -311,10 +270,10 @@ export async function setTrackNeverCrossfade(track) {
 	await setTrackNeverCrossfadeOut(track);
 }
 export async function setTrackNeverCrossfadeIn(track) {
-	await setExtendedTag(track, crossfadeMetaTitle.in, crossfadeType.never);
+	await setExtendedTag(track, crossfadeDirection.in, crossfadeType.never);
 }
 export async function setTrackNeverCrossfadeOut(track) {
-	await setExtendedTag(track, crossfadeMetaTitle.out, crossfadeType.never);
+	await setExtendedTag(track, crossfadeDirection.out, crossfadeType.never);
 }
 
 
@@ -323,10 +282,10 @@ export async function setTrackAutoCrossfade(track) {
 	await setTrackAutoCrossfadeOut(track);
 }
 export async function setTrackAutoCrossfadeIn(track) {
-	await removeExtendedTag(track, crossfadeMetaTitle.in);
+	await removeExtendedTag(track, crossfadeDirection.in);
 }
 export async function setTrackAutoCrossfadeOut(track) {
-	await removeExtendedTag(track, crossfadeMetaTitle.out);
+	await removeExtendedTag(track, crossfadeDirection.out);
 }
 
 
@@ -379,13 +338,13 @@ export async function setGenreAutoCrossfade(genre) {
 
 export async function setGenreAlwaysCrossfade(genre) {
 	let genreDict = await getGenreCrossfadeList();
-	genreDict[genre] = 'always';
+	genreDict[genre] = crossfadeType.always;
 	setGenreCrossfadeList(genreDict);
 }
 
 export async function setGenreNeverCrossfade(genre) {
 	let genreDict = await getGenreCrossfadeList();
-	genreDict[genre] = 'never';
+	genreDict[genre] = crossfadeType.never;
 	setGenreCrossfadeList(genreDict);
 }
 
@@ -411,13 +370,13 @@ export async function setMoodAutoCrossfade(mood) {
 
 export async function setMoodAlwaysCrossfade(mood) {
 	let moodDict = await getMoodCrossfadeList();
-	moodDict[mood] = 'always';
+	moodDict[mood] = crossfadeType.always;
 	setMoodCrossfadeList(moodDict);
 }
 
 export async function setMoodNeverCrossfade(mood) {
 	let moodDict = await getMoodCrossfadeList();
-	moodDict[mood] = 'never';
+	moodDict[mood] = crossfadeType.never;
 	setMoodCrossfadeList(moodDict);
 }
 
